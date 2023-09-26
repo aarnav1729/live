@@ -1,4 +1,4 @@
-// Import the functions you need from the SDKs you need
+  // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
@@ -17,6 +17,29 @@ const firebaseConfig = {
   measurementId: "G-KSYDTRGCZF"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Get a reference to the Firestore database
+const db = firebase.firestore();
+
+// Handle sending a message
+document.getElementById("send-button").addEventListener("click", () => {
+  const message = document.getElementById("message-input").value;
+  db.collection("messages").add({
+    text: message,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById("message-input").value = "";
+});
+
+// Listen for new messages and display them in the chat
+db.collection("messages")
+  .orderBy("timestamp")
+  .onSnapshot((snapshot) => {
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const messageData = doc.data();
+      const messageElement = document.createElement("div");
+      messageElement.textContent = messageData.text;
+      chatMessages.appendChild(messageElement);
+    });
+  });
